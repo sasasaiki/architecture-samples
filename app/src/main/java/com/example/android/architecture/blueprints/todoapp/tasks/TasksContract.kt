@@ -42,7 +42,9 @@ class TasksContract {
 
     sealed interface TasksAction : Action {
         data class SetFiltering(val requestType: TasksFilterType) : TasksAction
-        data class TasksUpdated(val tasks: List<Task>) : TasksAction
+        data class TasksOrFilterUpdated(val tasks: List<Task>, val filterType: TasksFilterType) :
+            TasksAction
+
         object Loading : TasksAction
         data class ShowOneTimeMessage(@StringRes val resId: Int) : TasksAction
         data class ShowEditResultMessage(val resultCode: Int) : TasksAction
@@ -60,9 +62,9 @@ class TasksReducer : Reducer<TasksAction, TasksUiState> {
         prevState: TasksUiState
     ): TasksUiState {
         return when (action) {
-            is TasksAction.SetFiltering -> setSetFiltering(action, prevState)
+            is TasksAction.SetFiltering -> setFiltering(action, prevState)
             is TasksAction.ShowOneTimeMessage -> prevState.copy(userMessage = action.resId)
-            is TasksAction.TasksUpdated -> filterTasks(action, prevState)
+            is TasksAction.TasksOrFilterUpdated -> filterTasks(action, prevState)
             TasksAction.Loading -> prevState.copy(isLoading = true)
             is TasksAction.ShowEditResultMessage -> showEditResultMessage(
                 action,
@@ -92,13 +94,13 @@ class TasksReducer : Reducer<TasksAction, TasksUiState> {
 
 
     private fun filterTasks(
-        action: TasksAction.TasksUpdated,
+        action: TasksAction.TasksOrFilterUpdated,
         prevState: TasksUiState
     ): TasksUiState {
         val tasksToShow = ArrayList<Task>()
         // We filter the tasks based on the requestType
         for (task in action.tasks) {
-            when (prevState.filteringUiInfo.filterType) {
+            when (action.filterType) {
                 TasksFilterType.ALL_TASKS -> tasksToShow.add(task)
                 TasksFilterType.ACTIVE_TASKS -> if (task.isActive) {
                     tasksToShow.add(task)
@@ -113,7 +115,7 @@ class TasksReducer : Reducer<TasksAction, TasksUiState> {
     }
 
 
-    private fun setSetFiltering(
+    private fun setFiltering(
         action: TasksAction.SetFiltering,
         prevState: TasksUiState
     ): TasksUiState {

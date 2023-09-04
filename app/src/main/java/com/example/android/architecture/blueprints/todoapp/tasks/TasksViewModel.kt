@@ -31,6 +31,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -44,8 +45,9 @@ import javax.inject.Inject
 class TasksViewModel @Inject constructor(
     private val taskRepository: TaskRepository,
     private val savedStateHandle: SavedStateHandle,
-    private val tasksReducer: TasksReducer = TasksReducer()
 ) : TasksContract.ViewModel, ViewModel() {
+    // TODO inject
+    private val tasksReducer: TasksReducer = TasksReducer()
 
     private val _state: MutableStateFlow<TasksUiState> =
         MutableStateFlow(TasksUiState(isLoading = true))
@@ -56,17 +58,14 @@ class TasksViewModel @Inject constructor(
             .getStateFlow(TASKS_FILTER_SAVED_STATE_KEY, ALL_TASKS)
             .onEach {
                 _state.value = tasksReducer.reduce(TasksAction.SetFiltering(it), _state.value)
+            }
+            .combine(taskRepository.getTasksStream()) { filter, tasks ->
+                tasksReducer.reduce(TasksAction.TasksOrFilterUpdated(tasks, filter), _state.value)
+            }.onEach {
+                _state.value = it
+            }.catch {
+                // TODO エラーハンドリング
             }.launchIn(viewModelScope)
-
-
-        taskRepository.getTasksStream().onEach {
-            _state.value = tasksReducer.reduce(
-                action = TasksAction.TasksUpdated(it),
-                prevState = _state.value
-            )
-        }.catch {
-            // TODO エラーハンドリング
-        }.launchIn(viewModelScope)
     }
 
     override fun ViewHolders<TasksIntent, TasksUiState>.handleIntentInternal(intent: TasksIntent) {

@@ -57,6 +57,7 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.tasks.TasksContract.TasksIntent.*
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ACTIVE_TASKS
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ALL_TASKS
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.COMPLETED_TASKS
@@ -81,11 +82,25 @@ fun TasksScreen(
         topBar = {
             TasksTopAppBar(
                 openDrawer = openDrawer,
-                onFilterAllTasks = { viewModel.setFiltering(ALL_TASKS) },
-                onFilterActiveTasks = { viewModel.setFiltering(ACTIVE_TASKS) },
-                onFilterCompletedTasks = { viewModel.setFiltering(COMPLETED_TASKS) },
-                onClearCompletedTasks = { viewModel.clearCompletedTasks() },
-                onRefresh = { viewModel.refresh() }
+                onFilterAllTasks = {
+                    viewModel.handleIntent(
+                        SetFiltering(
+                            ALL_TASKS
+                        )
+                    )
+                },
+                onFilterActiveTasks = {
+                    viewModel.handleIntent(
+                        SetFiltering((ACTIVE_TASKS))
+                    )
+                },
+                onFilterCompletedTasks = {
+                    viewModel.handleIntent(
+                        SetFiltering(COMPLETED_TASKS)
+                    )
+                },
+                onClearCompletedTasks = { viewModel.handleIntent(ClearCompletedTasks) },
+                onRefresh = { viewModel.handleIntent(Refresh) }
             )
         },
         modifier = modifier.fillMaxSize(),
@@ -95,7 +110,7 @@ fun TasksScreen(
             }
         }
     ) { paddingValues ->
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        val uiState by viewModel.state.collectAsStateWithLifecycle()
 
         TasksContent(
             loading = uiState.isLoading,
@@ -103,9 +118,16 @@ fun TasksScreen(
             currentFilteringLabel = uiState.filteringUiInfo.currentFilteringLabel,
             noTasksLabel = uiState.filteringUiInfo.noTasksLabel,
             noTasksIconRes = uiState.filteringUiInfo.noTaskIconRes,
-            onRefresh = viewModel::refresh,
-            onTaskClick = onTaskClick,
-            onTaskCheckedChange = viewModel::completeTask,
+            onRefresh = { viewModel.handleIntent(Refresh) },
+            onTaskClick = onTaskClick, // TODO これもviewModel通す
+            onTaskCheckedChange = { task: Task, b: Boolean ->
+                viewModel.handleIntent(
+                    CompleteTask(
+                        task,
+                        b
+                    )
+                )
+            },
             modifier = Modifier.padding(paddingValues)
         )
 
@@ -122,7 +144,7 @@ fun TasksScreen(
         val currentOnUserMessageDisplayed by rememberUpdatedState(onUserMessageDisplayed)
         LaunchedEffect(userMessage) {
             if (userMessage != 0) {
-                viewModel.showEditResultMessage(userMessage)
+                viewModel.handleIntent(EditResultMessageExist(userMessage))
                 currentOnUserMessageDisplayed()
             }
         }
