@@ -83,24 +83,24 @@ fun TasksScreen(
             TasksTopAppBar(
                 openDrawer = openDrawer,
                 onFilterAllTasks = {
-                    viewModel.handleIntent(
+                    viewModel.processIntent(
                         SetFiltering(
                             ALL_TASKS
                         )
                     )
                 },
                 onFilterActiveTasks = {
-                    viewModel.handleIntent(
+                    viewModel.processIntent(
                         SetFiltering((ACTIVE_TASKS))
                     )
                 },
                 onFilterCompletedTasks = {
-                    viewModel.handleIntent(
+                    viewModel.processIntent(
                         SetFiltering(COMPLETED_TASKS)
                     )
                 },
-                onClearCompletedTasks = { viewModel.handleIntent(ClearCompletedTasks) },
-                onRefresh = { viewModel.handleIntent(Refresh) }
+                onClearCompletedTasks = { viewModel.processIntent(ClearCompletedTasks) },
+                onRefresh = { viewModel.processIntent(Refresh) }
             )
         },
         modifier = modifier.fillMaxSize(),
@@ -118,10 +118,10 @@ fun TasksScreen(
             currentFilteringLabel = uiState.filteringUiInfo.currentFilteringLabel,
             noTasksLabel = uiState.filteringUiInfo.noTasksLabel,
             noTasksIconRes = uiState.filteringUiInfo.noTaskIconRes,
-            onRefresh = { viewModel.handleIntent(Refresh) },
+            onRefresh = { viewModel.processIntent(Refresh) },
             onTaskClick = onTaskClick, // TODO これもviewModel通す
             onTaskCheckedChange = { task: Task, b: Boolean ->
-                viewModel.handleIntent(
+                viewModel.processIntent(
                     CompleteTask(
                         task,
                         b
@@ -144,7 +144,7 @@ fun TasksScreen(
         val currentOnUserMessageDisplayed by rememberUpdatedState(onUserMessageDisplayed)
         LaunchedEffect(userMessage) {
             if (userMessage != 0) {
-                viewModel.handleIntent(EditResultMessageExist(userMessage))
+                viewModel.processIntent(EditResultMessageExist(userMessage))
                 currentOnUserMessageDisplayed()
             }
         }
@@ -224,7 +224,7 @@ private fun TaskItem(
             textDecoration = if (task.isCompleted) {
                 TextDecoration.LineThrough
             } else {
-                null
+                TextDecoration.None
             }
         )
     }
