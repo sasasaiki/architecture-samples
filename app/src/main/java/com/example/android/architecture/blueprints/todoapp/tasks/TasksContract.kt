@@ -5,7 +5,7 @@ import com.example.android.architecture.blueprints.todoapp.Action
 import com.example.android.architecture.blueprints.todoapp.Intent
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.State
-import com.example.android.architecture.blueprints.todoapp.ViewHolders
+import com.example.android.architecture.blueprints.todoapp.StateHolders
 import com.example.android.architecture.blueprints.todoapp.data.Task
 
 class TasksContract {
@@ -55,7 +55,7 @@ class TasksContract {
 
     }
 
-    interface ViewModel : ViewHolders<TasksIntent, TasksUiState>
+    interface ViewModel : StateHolders<TasksIntent, TasksUiState, TasksAction>
 
 }
 

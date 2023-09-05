@@ -209,7 +209,6 @@ private fun TaskItem(
     onCheckedChange: (Boolean) -> Unit,
     onTaskClick: (Task) -> Unit
 ) {
-    Timber.d("s-mvi ::::: TaskItem: $task")
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier

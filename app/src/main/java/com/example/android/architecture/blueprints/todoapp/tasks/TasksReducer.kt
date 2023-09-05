@@ -10,7 +10,7 @@ import com.example.android.architecture.blueprints.todoapp.tasks.TasksContract.T
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksContract.TasksAction.*
 
 class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
-    override fun Reducer<TasksAction, TasksContract.TasksUiState>.reduceInternal(
+    override fun reduce(
         action: TasksAction,
         prevState: TasksContract.TasksUiState
     ): TasksContract.TasksUiState {
