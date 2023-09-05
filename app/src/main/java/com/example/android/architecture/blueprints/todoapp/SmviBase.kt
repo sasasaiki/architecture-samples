@@ -23,7 +23,7 @@ interface Reducer<A : Action, S : State> {
 interface ViewHolders<I : Intent, S : State> {
     val state: StateFlow<S>
 
-    fun handleIntent(intent: I) {
+    fun processIntent(intent: I) {
         Timber.d("s-mvi: ViewHolders#handleIntent() called with: intent = [$intent]")
         handleIntentInternal(intent)
     }
