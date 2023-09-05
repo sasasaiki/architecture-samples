@@ -76,6 +76,11 @@ class TasksViewModel @Inject constructor(
             TasksIntent.Refresh -> refresh()
             TasksIntent.SnackbarMessageShown -> snackbarMessageShown()
             is TasksIntent.EditResultMessageExist -> showEditResultMessage(result = intent.resultCode)
+            TasksIntent.OpenedEditingTask -> _state.value =
+                tasksReducer.reduce(TasksAction.OpenedEditingTask, _state.value)
+
+            is TasksIntent.SelectTask -> _state.value =
+                tasksReducer.reduce(TasksAction.SelectTask(intent.task), _state.value)
         }
     }
 
@@ -114,7 +119,7 @@ class TasksViewModel @Inject constructor(
         _state.value = tasksReducer.reduce(TasksAction.ShowEditResultMessage(result), _state.value)
     }
 
-    fun snackbarMessageShown() {
+    private fun snackbarMessageShown() {
         _state.value = tasksReducer.reduce(TasksAction.OneTimeMessageShown, _state.value)
     }
 

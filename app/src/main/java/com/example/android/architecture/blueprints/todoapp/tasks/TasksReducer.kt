@@ -6,32 +6,38 @@ import com.example.android.architecture.blueprints.todoapp.EDIT_RESULT_OK
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.Reducer
 import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.tasks.TasksContract.TasksAction
+import com.example.android.architecture.blueprints.todoapp.tasks.TasksContract.TasksAction.*
 
-class TasksReducer : Reducer<TasksContract.TasksAction, TasksContract.TasksUiState> {
-    override fun Reducer<TasksContract.TasksAction, TasksContract.TasksUiState>.reduceInternal(
-        action: TasksContract.TasksAction,
+class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
+    override fun Reducer<TasksAction, TasksContract.TasksUiState>.reduceInternal(
+        action: TasksAction,
         prevState: TasksContract.TasksUiState
     ): TasksContract.TasksUiState {
         return when (action) {
-            is TasksContract.TasksAction.SetFiltering -> setFiltering(action, prevState)
+            is SetFiltering -> setFiltering(action, prevState)
 
-            is TasksContract.TasksAction.ShowOneTimeMessage -> prevState.copy(userMessage = action.resId)
+            is ShowOneTimeMessage -> prevState.copy(userMessage = action.resId)
 
-            TasksContract.TasksAction.Loading -> prevState.copy(isLoading = true)
+            Loading -> prevState.copy(isLoading = true)
 
-            is TasksContract.TasksAction.TasksUpdated -> updateItems(action, prevState)
+            is TasksUpdated -> updateItems(action, prevState)
 
-            is TasksContract.TasksAction.ShowEditResultMessage -> showEditResultMessage(
+            is ShowEditResultMessage -> showEditResultMessage(
                 action,
                 prevState
             )
 
-            TasksContract.TasksAction.OneTimeMessageShown -> prevState.copy(userMessage = null)
+            OneTimeMessageShown -> prevState.copy(userMessage = null)
+
+            OpenedEditingTask -> prevState.copy(editingTargetTask = null)
+
+            is SelectTask -> prevState.copy(editingTargetTask = action.task)
         }
     }
 
     private fun showEditResultMessage(
-        action: TasksContract.TasksAction.ShowEditResultMessage,
+        action: ShowEditResultMessage,
         prevState: TasksContract.TasksUiState
     ): TasksContract.TasksUiState {
         val stringRes = when (action.resultCode) {
@@ -62,7 +68,7 @@ class TasksReducer : Reducer<TasksContract.TasksAction, TasksContract.TasksUiSta
     }
 
     private fun updateItems(
-        action: TasksContract.TasksAction.TasksUpdated,
+        action: TasksUpdated,
         prevState: TasksContract.TasksUiState
     ): TasksContract.TasksUiState {
         return prevState.copy(
@@ -76,7 +82,7 @@ class TasksReducer : Reducer<TasksContract.TasksAction, TasksContract.TasksUiSta
 
 
     private fun setFiltering(
-        action: TasksContract.TasksAction.SetFiltering,
+        action: SetFiltering,
         prevState: TasksContract.TasksUiState
     ): TasksContract.TasksUiState {
         val filteringUiInfo = when (val type = action.requestType) {

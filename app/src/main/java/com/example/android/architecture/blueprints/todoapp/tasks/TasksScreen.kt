@@ -64,6 +64,7 @@ import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType
 import com.example.android.architecture.blueprints.todoapp.util.LoadingContent
 import com.example.android.architecture.blueprints.todoapp.util.TasksTopAppBar
 import com.google.accompanist.appcompattheme.AppCompatTheme
+import timber.log.Timber
 
 @OptIn(ExperimentalLifecycleComposeApi::class)
 @Composable
@@ -119,7 +120,7 @@ fun TasksScreen(
             noTasksLabel = uiState.filteringUiInfo.noTasksLabel,
             noTasksIconRes = uiState.filteringUiInfo.noTaskIconRes,
             onRefresh = { viewModel.processIntent(Refresh) },
-            onTaskClick = onTaskClick, // TODO これもviewModel通す
+            onTaskClick = { task -> viewModel.processIntent(SelectTask(task)) },
             onTaskCheckedChange = { task: Task, b: Boolean ->
                 viewModel.processIntent(
                     CompleteTask(
@@ -136,7 +137,14 @@ fun TasksScreen(
             val snackbarText = stringResource(message)
             LaunchedEffect(scaffoldState, viewModel, message, snackbarText) {
                 scaffoldState.snackbarHostState.showSnackbar(snackbarText)
-                viewModel.snackbarMessageShown()
+                viewModel.processIntent(SnackbarMessageShown)
+            }
+        }
+
+        uiState.editingTargetTask?.let { task ->
+            LaunchedEffect(task) {
+                onTaskClick(task)
+                viewModel.processIntent(OpenedEditingTask)
             }
         }
 
@@ -201,6 +209,7 @@ private fun TaskItem(
     onCheckedChange: (Boolean) -> Unit,
     onTaskClick: (Task) -> Unit
 ) {
+    Timber.d("s-mvi ::::: TaskItem: $task")
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier
@@ -218,14 +227,17 @@ private fun TaskItem(
         Text(
             text = task.titleForList,
             style = MaterialTheme.typography.h6,
+            color = if (task.isCompleted) MaterialTheme.colors.error else MaterialTheme.colors.onSurface,
             modifier = Modifier.padding(
                 start = dimensionResource(id = R.dimen.horizontal_margin)
             ),
-            textDecoration = if (task.isCompleted) {
-                TextDecoration.LineThrough
-            } else {
-                TextDecoration.None
-            }
+            // FIXME：editから帰ってくるとTextDecorationがセットし直されてもなぜか見た目が変わらない
+            // 同じフラグを利用したcolorは変わるのでcomposeの問題っぽい？一旦置いておく。
+//            textDecoration = if (task.isCompleted) {
+//                TextDecoration.LineThrough
+//            } else {
+//                TextDecoration.None
+//            }
         )
     }
 }

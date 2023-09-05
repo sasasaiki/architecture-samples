@@ -16,7 +16,8 @@ class TasksContract {
         val items: Items = Items(emptyList(), emptyList()),
         val isLoading: Boolean = false,
         val filteringUiInfo: FilteringUiInfo = FilteringUiInfo(),
-        val userMessage: Int? = null
+        val userMessage: Int? = null,
+        val editingTargetTask: Task? = null,
     ) : State {
         data class FilteringUiInfo(
             val filterType: TasksFilterType = TasksFilterType.ALL_TASKS,
@@ -37,20 +38,21 @@ class TasksContract {
         data class CompleteTask(val task: Task, val completed: Boolean) : TasksIntent
         data class EditResultMessageExist(val resultCode: Int) : TasksIntent
         object SnackbarMessageShown : TasksIntent
+        data class SelectTask(val task: Task) : TasksIntent
+        object OpenedEditingTask : TasksIntent
         object Refresh : TasksIntent
     }
 
     sealed interface TasksAction : Action {
         data class SetFiltering(val requestType: TasksFilterType) : TasksAction
-
-        data class TasksUpdated(val tasks: List<Task>) :
-            TasksAction
-
+        data class TasksUpdated(val tasks: List<Task>) : TasksAction
         object Loading : TasksAction
         data class ShowOneTimeMessage(@StringRes val resId: Int) : TasksAction
         data class ShowEditResultMessage(val resultCode: Int) : TasksAction
-
+        data class SelectTask(val task: Task) : TasksAction
         object OneTimeMessageShown : TasksAction
+        object OpenedEditingTask : TasksAction
+
     }
 
     interface ViewModel : ViewHolders<TasksIntent, TasksUiState>
