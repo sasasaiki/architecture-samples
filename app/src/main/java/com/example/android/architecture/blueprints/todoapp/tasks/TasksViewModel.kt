@@ -59,13 +59,14 @@ class TasksViewModel @Inject constructor(
             .onEach {
                 _state.value = tasksReducer.reduce(TasksAction.SetFiltering(it), _state.value)
             }
-            .combine(taskRepository.getTasksStream()) { filter, tasks ->
-                tasksReducer.reduce(TasksAction.TasksOrFilterUpdated(tasks, filter), _state.value)
-            }.onEach {
-                _state.value = it
-            }.catch {
-                // TODO エラーハンドリング
-            }.launchIn(viewModelScope)
+            .launchIn(viewModelScope)
+
+
+        taskRepository.getTasksStream().onEach {
+            _state.value = tasksReducer.reduce(TasksAction.TasksUpdated(it), _state.value)
+        }.catch {
+            // TODO エラーハンドリング
+        }.launchIn(viewModelScope)
     }
 
     override fun ViewHolders<TasksIntent, TasksUiState>.handleIntentInternal(intent: TasksIntent) {

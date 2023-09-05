@@ -6,9 +6,14 @@ import timber.log.Timber
 interface Reducer<A : Action, S : State> {
 
     fun reduce(action: A, prevState: S): S {
-        Timber.d("s-mvi: Reducer#reduce() called with: action = [$action], prevState = [$prevState]")
+        Timber.d("s-mvi:: ----------------Reduce start----------------\n")
+        Timber.d("s-mvi:: action name : ${action.javaClass.simpleName}\n")
+        Timber.d("s-mvi:: prevState : $prevState\n")
+        Timber.d("s-mvi:: action detail : $action\n")
         val newState = reduceInternal(action, prevState)
-        Timber.d("s-mvi: Reducer#reduce() returned: $newState")
+        Timber.d("s-mvi:: newState : $newState\n")
+        Timber.d("s-mvi:: ----------------Reduce end----------------\n")
+
         return newState
     }
 
