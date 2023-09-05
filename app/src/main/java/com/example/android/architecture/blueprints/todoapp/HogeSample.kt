@@ -13,7 +13,7 @@ class HogeViewModel(
     private val _state: MutableStateFlow<HogeContract.HogeState> =
         MutableStateFlow(HogeContract.HogeState.Initial)
     override val state: StateFlow<HogeContract.HogeState> = _state.asStateFlow()
-    override fun ViewHolders<HogeContract.HogeIntent, HogeContract.HogeState>.handleIntentInternal(
+    override fun ViewHolders<HogeContract.HogeIntent, HogeContract.HogeState>.processIntentInternal(
         intent: HogeContract.HogeIntent
     ) {
         when (intent) {

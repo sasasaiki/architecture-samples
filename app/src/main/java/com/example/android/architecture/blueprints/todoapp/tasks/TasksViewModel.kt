@@ -31,7 +31,6 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.catch
-import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -69,7 +68,7 @@ class TasksViewModel @Inject constructor(
         }.launchIn(viewModelScope)
     }
 
-    override fun ViewHolders<TasksIntent, TasksUiState>.handleIntentInternal(intent: TasksIntent) {
+    override fun ViewHolders<TasksIntent, TasksUiState>.processIntentInternal(intent: TasksIntent) {
         when (intent) {
             is TasksIntent.SetFiltering -> setFiltering(intent.requestType)
             TasksIntent.ClearCompletedTasks -> clearCompletedTasks()
