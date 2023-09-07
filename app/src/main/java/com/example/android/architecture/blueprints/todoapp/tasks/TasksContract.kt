@@ -15,25 +15,56 @@ class TasksContract {
     data class TasksUiState(
         val items: Items = Items(emptyList(), emptyList()),
         val isLoading: Boolean = false,
-        val filteringUiInfo: FilteringUiInfo = FilteringUiInfo(),
+        val filteringUiInfo: FilteringUiInfo = FilteringUiInfo.AllTasks,
         @StringRes val userMessage: Int? = null,
         val editingTargetTask: Task? = null,
     ) : State {
-        data class FilteringUiInfo(
-            val filterType: TasksFilterType = TasksFilterType.ALL_TASKS,
-            val currentFilteringLabel: Int = R.string.label_all,
-            val noTasksLabel: Int = R.string.no_tasks_all,
-            val noTaskIconRes: Int = R.drawable.logo_no_fill,
-        )
+
+        enum class FilteringUiInfo(
+            val filterType: TasksFilterType,
+            val currentFilteringLabel: Int,
+            val noTasksLabel: Int,
+            val noTaskIconRes: Int,
+        ) {
+            AllTasks(
+                filterType = TasksFilterType.ALL_TASKS,
+                currentFilteringLabel = R.string.label_all,
+                noTasksLabel = R.string.no_tasks_all,
+                noTaskIconRes = R.drawable.logo_no_fill,
+            ),
+            ActiveTasks(
+                filterType = TasksFilterType.ACTIVE_TASKS,
+                currentFilteringLabel = R.string.label_active,
+                noTasksLabel = R.string.no_tasks_active,
+                noTaskIconRes = R.drawable.ic_check_circle_96dp,
+            ),
+            CompletedTasks(
+                filterType = TasksFilterType.COMPLETED_TASKS,
+                currentFilteringLabel = R.string.label_completed,
+                noTasksLabel = R.string.no_tasks_completed,
+                noTaskIconRes = R.drawable.ic_verified_user_96dp,
+            );
+
+            companion object {
+                fun find(filterType: TasksFilterType): FilteringUiInfo {
+                    return when (filterType) {
+                        TasksFilterType.ALL_TASKS -> AllTasks
+                        TasksFilterType.ACTIVE_TASKS -> ActiveTasks
+                        TasksFilterType.COMPLETED_TASKS -> CompletedTasks
+                    }
+                }
+            }
+        }
+
 
         data class Items(
             val allItems: List<Task>,
-            val displayItems: List<Task>,
+            val filteredItems: List<Task>,
         )
     }
 
     // ユーザーが〇〇したいぜを表現
-    // この画面でユーザーができることが一覧化される
+// この画面でユーザーができることが一覧化される
     sealed interface TasksIntent : Intent {
         data class SelectFilterType(val requestType: TasksFilterType) : TasksIntent
         object ClearCompletedTasks : TasksIntent
@@ -47,7 +78,7 @@ class TasksContract {
     }
 
     // アプリが〇〇したいぜを表現
-    // この画面でアプリができることが一覧化される
+// この画面でアプリができることが一覧化される
     sealed interface TasksAction : Action {
         data class SetFiltering(val requestType: TasksFilterType) : TasksAction
         data class UpdateTasks(val tasks: List<Task>) : TasksAction

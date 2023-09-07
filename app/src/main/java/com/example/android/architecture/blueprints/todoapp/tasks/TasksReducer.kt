@@ -8,12 +8,13 @@ import com.example.android.architecture.blueprints.todoapp.Reducer
 import com.example.android.architecture.blueprints.todoapp.data.Task
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksContract.TasksAction
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksContract.TasksAction.*
+import com.example.android.architecture.blueprints.todoapp.tasks.TasksContract.TasksUiState
 
-class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
+class TasksReducer : Reducer<TasksAction, TasksUiState> {
     override fun reduce(
         action: TasksAction,
-        prevState: TasksContract.TasksUiState
-    ): TasksContract.TasksUiState {
+        prevState: TasksUiState
+    ): TasksUiState {
         return when (action) {
             is SetFiltering -> setFiltering(action, prevState)
 
@@ -38,8 +39,8 @@ class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
 
     private fun showEditResultMessage(
         action: HandleEditResultMessage,
-        prevState: TasksContract.TasksUiState
-    ): TasksContract.TasksUiState {
+        prevState: TasksUiState
+    ): TasksUiState {
         val stringRes = when (action.resultCode) {
             EDIT_RESULT_OK -> R.string.successfully_saved_task_message
             ADD_EDIT_RESULT_OK -> R.string.successfully_added_task_message
@@ -69,12 +70,12 @@ class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
 
     private fun updateItems(
         action: UpdateTasks,
-        prevState: TasksContract.TasksUiState
-    ): TasksContract.TasksUiState {
+        prevState: TasksUiState
+    ): TasksUiState {
         return prevState.copy(
-            items = TasksContract.TasksUiState.Items(
+            items = TasksUiState.Items(
                 allItems = action.tasks,
-                displayItems = filteredTasks(action.tasks, prevState.filteringUiInfo.filterType)
+                filteredItems = filteredTasks(action.tasks, prevState.filteringUiInfo.filterType)
             ),
             isLoading = false
         )
@@ -83,39 +84,16 @@ class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
 
     private fun setFiltering(
         action: SetFiltering,
-        prevState: TasksContract.TasksUiState
-    ): TasksContract.TasksUiState {
-        val filteringUiInfo = when (val type = action.requestType) {
-            TasksFilterType.ALL_TASKS -> {
-                TasksContract.TasksUiState.FilteringUiInfo(
-                    filterType = type,
-                    R.string.label_all, R.string.no_tasks_all,
-                    R.drawable.logo_no_fill
-                )
-            }
-
-            TasksFilterType.ACTIVE_TASKS -> {
-                TasksContract.TasksUiState.FilteringUiInfo(
-                    filterType = type,
-                    R.string.label_active, R.string.no_tasks_active,
-                    R.drawable.ic_check_circle_96dp
-                )
-            }
-
-            TasksFilterType.COMPLETED_TASKS -> {
-                TasksContract.TasksUiState.FilteringUiInfo(
-                    filterType = type,
-                    R.string.label_completed, R.string.no_tasks_completed,
-                    R.drawable.ic_verified_user_96dp
-                )
-            }
-        }
+        prevState: TasksUiState
+    ): TasksUiState {
+        val filteringUiInfo =
+            TasksUiState.FilteringUiInfo.find(action.requestType)
 
         val allItems = prevState.items.allItems
         return prevState.copy(
-            items = TasksContract.TasksUiState.Items(
+            items = TasksUiState.Items(
                 allItems = allItems,
-                displayItems = filteredTasks(
+                filteredItems = filteredTasks(
                     allItems = allItems,
                     filterType = filteringUiInfo.filterType
                 )
