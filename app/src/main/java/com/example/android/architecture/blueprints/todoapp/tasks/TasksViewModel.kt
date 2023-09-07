@@ -78,16 +78,17 @@ class TasksViewModel @Inject constructor(
 
             TasksIntent.Refresh -> refresh()
 
-            TasksIntent.CloseOnetimeMessage -> {
-                _state.reduce(tasksReducer, TasksAction.ConsumeOneTimeMessage)
-            }
+            TasksIntent.CloseOnetimeMessage -> _state.reduce(
+                tasksReducer,
+                TasksAction.ConsumeOneTimeMessage
+            )
 
-            is TasksIntent.ExistEditResultMessage -> {
-                _state.reduce(
-                    tasksReducer,
-                    TasksAction.HandleEditResultMessage(resultCode = intent.resultCode)
-                )
-            }
+
+            is TasksIntent.ExistEditResultMessage -> _state.reduce(
+                tasksReducer,
+                TasksAction.HandleEditResultMessage(resultCode = intent.resultCode)
+            )
+
 
             TasksIntent.OpenEditingTask -> _state.reduce(
                 tasksReducer,

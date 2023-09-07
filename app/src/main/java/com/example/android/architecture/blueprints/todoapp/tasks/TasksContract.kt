@@ -32,6 +32,8 @@ class TasksContract {
         )
     }
 
+    // ユーザーが〇〇したいぜを表現
+    // この画面でユーザーができることが一覧化される
     sealed interface TasksIntent : Intent {
         data class SelectFilterType(val requestType: TasksFilterType) : TasksIntent
         object ClearCompletedTasks : TasksIntent
@@ -44,6 +46,8 @@ class TasksContract {
             TasksIntent // TODO これはIntentじゃない気がする。多分最初にViewModelに持たせてActionとして処理するのが良い
     }
 
+    // アプリが〇〇したいぜを表現
+    // この画面でアプリができることが一覧化される
     sealed interface TasksAction : Action {
         data class SetFiltering(val requestType: TasksFilterType) : TasksAction
         data class UpdateTasks(val tasks: List<Task>) : TasksAction
