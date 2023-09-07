@@ -17,27 +17,27 @@ class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
         return when (action) {
             is SetFiltering -> setFiltering(action, prevState)
 
-            is ShowOneTimeMessage -> prevState.copy(userMessage = action.resId)
+            is HappenOneTimeMessage -> prevState.copy(userMessage = action.resId)
 
-            Loading -> prevState.copy(isLoading = true)
+            StartLoading -> prevState.copy(isLoading = true)
 
-            is TasksUpdated -> updateItems(action, prevState)
+            is UpdateTasks -> updateItems(action, prevState)
 
-            is ShowEditResultMessage -> showEditResultMessage(
+            is HappenEditResultMessage -> showEditResultMessage(
                 action,
                 prevState
             )
 
-            OneTimeMessageShown -> prevState.copy(userMessage = null)
+            ConsumeOneTimeMessage -> prevState.copy(userMessage = null)
 
-            OpenedEditingTask -> prevState.copy(editingTargetTask = null)
+            DeselectTask -> prevState.copy(editingTargetTask = null)
 
             is SelectTask -> prevState.copy(editingTargetTask = action.task)
         }
     }
 
     private fun showEditResultMessage(
-        action: ShowEditResultMessage,
+        action: HappenEditResultMessage,
         prevState: TasksContract.TasksUiState
     ): TasksContract.TasksUiState {
         val stringRes = when (action.resultCode) {
@@ -68,7 +68,7 @@ class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
     }
 
     private fun updateItems(
-        action: TasksUpdated,
+        action: UpdateTasks,
         prevState: TasksContract.TasksUiState
     ): TasksContract.TasksUiState {
         return prevState.copy(

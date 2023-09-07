@@ -33,26 +33,25 @@ class TasksContract {
     }
 
     sealed interface TasksIntent : Intent {
-        data class SetFiltering(val requestType: TasksFilterType) : TasksIntent
+        data class SelectFilterType(val requestType: TasksFilterType) : TasksIntent
         object ClearCompletedTasks : TasksIntent
         data class CompleteTask(val task: Task, val completed: Boolean) : TasksIntent
-        data class EditResultMessageExist(val resultCode: Int) : TasksIntent
-        object SnackbarMessageShown : TasksIntent
+        object CloseOnetimeMessage : TasksIntent
         data class SelectTask(val task: Task) : TasksIntent
-        object OpenedEditingTask : TasksIntent
+        object OpenEditingTask : TasksIntent
         object Refresh : TasksIntent
+        data class ExistEditResultMessage(val resultCode: Int) : TasksIntent // TODO これはIntentじゃない気がする。多分最初にViewModelに持たせてActionとして処理するのが良い
     }
 
     sealed interface TasksAction : Action {
         data class SetFiltering(val requestType: TasksFilterType) : TasksAction
-        data class TasksUpdated(val tasks: List<Task>) : TasksAction
-        object Loading : TasksAction
-        data class ShowOneTimeMessage(@StringRes val resId: Int) : TasksAction
-        data class ShowEditResultMessage(val resultCode: Int) : TasksAction
+        data class UpdateTasks(val tasks: List<Task>) : TasksAction
+        object StartLoading : TasksAction
         data class SelectTask(val task: Task) : TasksAction
-        object OneTimeMessageShown : TasksAction
-        object OpenedEditingTask : TasksAction
-
+        object DeselectTask : TasksAction
+        object ConsumeOneTimeMessage : TasksAction
+        data class HappenOneTimeMessage(@StringRes val resId: Int) : TasksAction
+        data class HappenEditResultMessage(val resultCode: Int) : TasksAction
     }
 
     interface ViewModel : StateHolders<TasksIntent, TasksUiState, TasksAction>

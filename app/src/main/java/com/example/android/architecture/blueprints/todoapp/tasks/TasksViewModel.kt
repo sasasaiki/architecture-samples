@@ -62,7 +62,7 @@ class TasksViewModel @Inject constructor(
 
 
         taskRepository.getTasksStream().onEach {
-            _state.reduce(tasksReducer, TasksAction.TasksUpdated(it))
+            _state.reduce(tasksReducer, TasksAction.UpdateTasks(it))
         }.catch {
             // TODO エラーハンドリング
         }.launchIn(viewModelScope)
@@ -70,15 +70,15 @@ class TasksViewModel @Inject constructor(
 
     override fun StateHolders<TasksIntent, TasksUiState, TasksAction>.processIntentInternal(intent: TasksIntent) {
         when (intent) {
-            is TasksIntent.SetFiltering -> setFiltering(intent.requestType)
+            is TasksIntent.SelectFilterType -> setFiltering(intent.requestType)
             TasksIntent.ClearCompletedTasks -> clearCompletedTasks()
             is TasksIntent.CompleteTask -> completeTask(intent.task, intent.completed)
             TasksIntent.Refresh -> refresh()
-            TasksIntent.SnackbarMessageShown -> snackbarMessageShown()
-            is TasksIntent.EditResultMessageExist -> showEditResultMessage(result = intent.resultCode)
-            TasksIntent.OpenedEditingTask -> _state.reduce(
+            TasksIntent.CloseOnetimeMessage -> consumeOneTimeMessage()
+            is TasksIntent.ExistEditResultMessage -> showEditResultMessage(result = intent.resultCode)
+            TasksIntent.OpenEditingTask -> _state.reduce(
                 tasksReducer,
-                TasksAction.OpenedEditingTask
+                TasksAction.DeselectTask
             )
 
             is TasksIntent.SelectTask -> _state.reduce(
@@ -97,7 +97,7 @@ class TasksViewModel @Inject constructor(
             taskRepository.clearCompletedTasks()
             _state.reduce(
                 tasksReducer,
-                TasksAction.ShowOneTimeMessage(R.string.completed_tasks_cleared)
+                TasksAction.HappenOneTimeMessage(R.string.completed_tasks_cleared)
             )
             refresh()
         }
@@ -108,29 +108,32 @@ class TasksViewModel @Inject constructor(
             taskRepository.completeTask(task.id)
             _state.reduce(
                 tasksReducer,
-                TasksAction.ShowOneTimeMessage(R.string.task_marked_complete)
+                TasksAction.HappenOneTimeMessage(R.string.task_marked_complete)
             )
 
         } else {
             taskRepository.activateTask(task.id)
             _state.reduce(
                 tasksReducer,
-                TasksAction.ShowOneTimeMessage(R.string.task_marked_active),
+                TasksAction.HappenOneTimeMessage(R.string.task_marked_active),
             )
         }
     }
 
     private fun showEditResultMessage(result: Int) {
-        _state.reduce(tasksReducer, TasksAction.ShowEditResultMessage(result))
+        _state.reduce(tasksReducer, TasksAction.HappenEditResultMessage(result))
     }
 
-    private fun snackbarMessageShown() {
-        _state.reduce(tasksReducer, TasksAction.OneTimeMessageShown)
+    private fun consumeOneTimeMessage() {
+        _state.reduce(tasksReducer, TasksAction.ConsumeOneTimeMessage)
     }
 
 
     private fun refresh() {
-        _state.reduce(tasksReducer, TasksAction.Loading)
+        _state.reduce(tasksReducer, TasksAction.StartLoading)
+        viewModelScope.launch {
+            taskRepository.refresh()
+        }
     }
 }
 
