@@ -16,7 +16,7 @@ class TasksContract {
         val items: Items = Items(emptyList(), emptyList()),
         val isLoading: Boolean = false,
         val filteringUiInfo: FilteringUiInfo = FilteringUiInfo(),
-        val userMessage: Int? = null,
+        @StringRes val userMessage: Int? = null,
         val editingTargetTask: Task? = null,
     ) : State {
         data class FilteringUiInfo(
@@ -40,7 +40,8 @@ class TasksContract {
         data class SelectTask(val task: Task) : TasksIntent
         object OpenEditingTask : TasksIntent
         object Refresh : TasksIntent
-        data class ExistEditResultMessage(val resultCode: Int) : TasksIntent // TODO これはIntentじゃない気がする。多分最初にViewModelに持たせてActionとして処理するのが良い
+        data class ExistEditResultMessage(val resultCode: Int) :
+            TasksIntent // TODO これはIntentじゃない気がする。多分最初にViewModelに持たせてActionとして処理するのが良い
     }
 
     sealed interface TasksAction : Action {
@@ -50,8 +51,8 @@ class TasksContract {
         data class SelectTask(val task: Task) : TasksAction
         object DeselectTask : TasksAction
         object ConsumeOneTimeMessage : TasksAction
-        data class HappenOneTimeMessage(@StringRes val resId: Int) : TasksAction
-        data class HappenEditResultMessage(val resultCode: Int) : TasksAction
+        data class HandleOneTimeMessage(@StringRes val resId: Int) : TasksAction
+        data class HandleEditResultMessage(val resultCode: Int) : TasksAction
     }
 
     interface ViewModel : StateHolders<TasksIntent, TasksUiState, TasksAction>

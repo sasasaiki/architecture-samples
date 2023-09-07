@@ -17,13 +17,13 @@ class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
         return when (action) {
             is SetFiltering -> setFiltering(action, prevState)
 
-            is HappenOneTimeMessage -> prevState.copy(userMessage = action.resId)
+            is HandleOneTimeMessage -> prevState.copy(userMessage = action.resId)
 
             StartLoading -> prevState.copy(isLoading = true)
 
             is UpdateTasks -> updateItems(action, prevState)
 
-            is HappenEditResultMessage -> showEditResultMessage(
+            is HandleEditResultMessage -> showEditResultMessage(
                 action,
                 prevState
             )
@@ -37,7 +37,7 @@ class TasksReducer : Reducer<TasksAction, TasksContract.TasksUiState> {
     }
 
     private fun showEditResultMessage(
-        action: HappenEditResultMessage,
+        action: HandleEditResultMessage,
         prevState: TasksContract.TasksUiState
     ): TasksContract.TasksUiState {
         val stringRes = when (action.resultCode) {

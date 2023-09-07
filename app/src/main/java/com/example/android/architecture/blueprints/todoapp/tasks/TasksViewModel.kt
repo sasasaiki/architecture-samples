@@ -71,11 +71,24 @@ class TasksViewModel @Inject constructor(
     override fun StateHolders<TasksIntent, TasksUiState, TasksAction>.processIntentInternal(intent: TasksIntent) {
         when (intent) {
             is TasksIntent.SelectFilterType -> setFiltering(intent.requestType)
+
             TasksIntent.ClearCompletedTasks -> clearCompletedTasks()
+
             is TasksIntent.CompleteTask -> completeTask(intent.task, intent.completed)
+
             TasksIntent.Refresh -> refresh()
-            TasksIntent.CloseOnetimeMessage -> consumeOneTimeMessage()
-            is TasksIntent.ExistEditResultMessage -> showEditResultMessage(result = intent.resultCode)
+
+            TasksIntent.CloseOnetimeMessage -> {
+                _state.reduce(tasksReducer, TasksAction.ConsumeOneTimeMessage)
+            }
+
+            is TasksIntent.ExistEditResultMessage -> {
+                _state.reduce(
+                    tasksReducer,
+                    TasksAction.HandleEditResultMessage(resultCode = intent.resultCode)
+                )
+            }
+
             TasksIntent.OpenEditingTask -> _state.reduce(
                 tasksReducer,
                 TasksAction.DeselectTask
@@ -97,7 +110,7 @@ class TasksViewModel @Inject constructor(
             taskRepository.clearCompletedTasks()
             _state.reduce(
                 tasksReducer,
-                TasksAction.HappenOneTimeMessage(R.string.completed_tasks_cleared)
+                TasksAction.HandleOneTimeMessage(R.string.completed_tasks_cleared)
             )
             refresh()
         }
@@ -108,24 +121,16 @@ class TasksViewModel @Inject constructor(
             taskRepository.completeTask(task.id)
             _state.reduce(
                 tasksReducer,
-                TasksAction.HappenOneTimeMessage(R.string.task_marked_complete)
+                TasksAction.HandleOneTimeMessage(R.string.task_marked_complete)
             )
 
         } else {
             taskRepository.activateTask(task.id)
             _state.reduce(
                 tasksReducer,
-                TasksAction.HappenOneTimeMessage(R.string.task_marked_active),
+                TasksAction.HandleOneTimeMessage(R.string.task_marked_active),
             )
         }
-    }
-
-    private fun showEditResultMessage(result: Int) {
-        _state.reduce(tasksReducer, TasksAction.HappenEditResultMessage(result))
-    }
-
-    private fun consumeOneTimeMessage() {
-        _state.reduce(tasksReducer, TasksAction.ConsumeOneTimeMessage)
     }
 
 
