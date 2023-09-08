@@ -34,25 +34,25 @@ interface StateHolders<I : Intent, S : State, A : Action> {
 
 object Logger {
     fun dIntentStart(intent: Intent) {
-        Timber.d("s-mvi:: ================ Intent start ================\n")
-        Timber.d("s-mvi:: intent name : ${intent.javaClass.simpleName}\n")
-        Timber.d("s-mvi:: intent detail : $intent\n")
+        Timber.d("RaMvi:: ================ Intent start ================\n")
+        Timber.d("RaMvi:: intent name : ${intent.javaClass.simpleName}\n")
+        Timber.d("RaMvi:: intent detail : $intent\n")
     }
 
     fun dIntentEnd() {
-        Timber.d("s-mvi:: ================ Intent end ================\n")
+        Timber.d("RaMvi:: ================ Intent end ================\n")
     }
 
     fun <A : Action, S : State> dReduceStart(reducer: Reducer<A, S>, action: Action, state: State) {
-        Timber.d("s-mvi:: ---------------- Reduce start ----------------\n")
-        Timber.d("s-mvi:: reducer name : ${reducer.javaClass.simpleName}\n")
-        Timber.d("s-mvi:: action name : ${action.javaClass.simpleName}\n")
-        Timber.d("s-mvi:: prevState : ${state}\n")
-        Timber.d("s-mvi:: action detail : $action\n")
+        Timber.d("RaMvi:: ---------------- Reduce start ----------------\n")
+        Timber.d("RaMvi:: reducer name : ${reducer.javaClass.simpleName}\n")
+        Timber.d("RaMvi:: action name : ${action.javaClass.simpleName}\n")
+        Timber.d("RaMvi:: prevState : ${state}\n")
+        Timber.d("RaMvi:: action detail : $action\n")
     }
 
     fun dReduceEnd(newState: State) {
-        Timber.d("s-mvi:: newState : ${newState}\n")
-        Timber.d("s-mvi:: ---------------- Reduce end ----------------\n")
+        Timber.d("RaMvi:: newState : ${newState}\n")
+        Timber.d("RaMvi:: ---------------- Reduce end ----------------\n")
     }
 }
