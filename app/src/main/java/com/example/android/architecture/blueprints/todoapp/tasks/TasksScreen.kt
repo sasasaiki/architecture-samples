@@ -49,7 +49,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -57,6 +56,7 @@ import androidx.lifecycle.compose.ExperimentalLifecycleComposeApi
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.example.android.architecture.blueprints.todoapp.R
 import com.example.android.architecture.blueprints.todoapp.data.Task
+import com.example.android.architecture.blueprints.todoapp.tasks.TasksContract.TasksIntent.*
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ACTIVE_TASKS
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.ALL_TASKS
 import com.example.android.architecture.blueprints.todoapp.tasks.TasksFilterType.COMPLETED_TASKS
@@ -81,11 +81,25 @@ fun TasksScreen(
         topBar = {
             TasksTopAppBar(
                 openDrawer = openDrawer,
-                onFilterAllTasks = { viewModel.setFiltering(ALL_TASKS) },
-                onFilterActiveTasks = { viewModel.setFiltering(ACTIVE_TASKS) },
-                onFilterCompletedTasks = { viewModel.setFiltering(COMPLETED_TASKS) },
-                onClearCompletedTasks = { viewModel.clearCompletedTasks() },
-                onRefresh = { viewModel.refresh() }
+                onFilterAllTasks = {
+                    viewModel.processIntent(
+                        SelectFilterType(
+                            ALL_TASKS
+                        )
+                    )
+                },
+                onFilterActiveTasks = {
+                    viewModel.processIntent(
+                        SelectFilterType((ACTIVE_TASKS))
+                    )
+                },
+                onFilterCompletedTasks = {
+                    viewModel.processIntent(
+                        SelectFilterType(COMPLETED_TASKS)
+                    )
+                },
+                onClearCompletedTasks = { viewModel.processIntent(ClearCompletedTasks) },
+                onRefresh = { viewModel.processIntent(Refresh) }
             )
         },
         modifier = modifier.fillMaxSize(),
@@ -95,17 +109,24 @@ fun TasksScreen(
             }
         }
     ) { paddingValues ->
-        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        val uiState by viewModel.state.collectAsStateWithLifecycle()
 
         TasksContent(
             loading = uiState.isLoading,
-            tasks = uiState.items,
+            tasks = uiState.items.filteredItems,
             currentFilteringLabel = uiState.filteringUiInfo.currentFilteringLabel,
             noTasksLabel = uiState.filteringUiInfo.noTasksLabel,
             noTasksIconRes = uiState.filteringUiInfo.noTaskIconRes,
-            onRefresh = viewModel::refresh,
-            onTaskClick = onTaskClick,
-            onTaskCheckedChange = viewModel::completeTask,
+            onRefresh = { viewModel.processIntent(Refresh) },
+            onTaskClick = { task -> viewModel.processIntent(SelectTask(task)) },
+            onTaskCheckedChange = { task: Task, b: Boolean ->
+                viewModel.processIntent(
+                    CompleteTask(
+                        task,
+                        b
+                    )
+                )
+            },
             modifier = Modifier.padding(paddingValues)
         )
 
@@ -114,7 +135,14 @@ fun TasksScreen(
             val snackbarText = stringResource(message)
             LaunchedEffect(scaffoldState, viewModel, message, snackbarText) {
                 scaffoldState.snackbarHostState.showSnackbar(snackbarText)
-                viewModel.snackbarMessageShown()
+                viewModel.processIntent(CloseOnetimeMessage)
+            }
+        }
+
+        uiState.editingTargetTask?.let { task ->
+            LaunchedEffect(task) {
+                onTaskClick(task)
+                viewModel.processIntent(OpenEditingTask)
             }
         }
 
@@ -122,7 +150,7 @@ fun TasksScreen(
         val currentOnUserMessageDisplayed by rememberUpdatedState(onUserMessageDisplayed)
         LaunchedEffect(userMessage) {
             if (userMessage != 0) {
-                viewModel.showEditResultMessage(userMessage)
+                viewModel.processIntent(ExistEditResultMessage(userMessage))
                 currentOnUserMessageDisplayed()
             }
         }
@@ -196,14 +224,17 @@ private fun TaskItem(
         Text(
             text = task.titleForList,
             style = MaterialTheme.typography.h6,
+            color = if (task.isCompleted) MaterialTheme.colors.error else MaterialTheme.colors.onSurface,
             modifier = Modifier.padding(
                 start = dimensionResource(id = R.dimen.horizontal_margin)
             ),
-            textDecoration = if (task.isCompleted) {
-                TextDecoration.LineThrough
-            } else {
-                null
-            }
+            // FIXME：editから帰ってくるとTextDecorationがセットし直されてもなぜか見た目が変わらない
+            // 同じフラグを利用したcolorは変わるのでcomposeの問題っぽい？一旦置いておく。
+//            textDecoration = if (task.isCompleted) {
+//                TextDecoration.LineThrough
+//            } else {
+//                TextDecoration.None
+//            }
         )
     }
 }
